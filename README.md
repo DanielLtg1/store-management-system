@@ -1,5 +1,7 @@
 # Store Management System
 
+> ⚠️ This project's UI and codebase are written in **Brazilian Portuguese**, as it is built for a local Brazilian business.
+
 Store management system for two shops — **Sonho Infantil Store** (children's clothing) and **Amore Mio Cosméticos** (perfumes). Built to run locally on a Wi-Fi network, replacing manual notebooks and spreadsheets.
 
 ## Features
@@ -29,14 +31,26 @@ store-management-system/
 │   ├── components/
 │   ├── context/
 │   └── theme.js
-└── backend/              # Backend (Node.js)
-    └── src/
-        ├── server.js
-        ├── db.js
-        └── routes/
+├── backend/              # Backend (Node.js)
+│   └── src/
+│       ├── server.js
+│       ├── db.js
+│       └── routes/
+└── database/
+    └── schema.sql        # Database schema
 ```
 
 ## Getting Started
+
+### Database
+
+Create the database by running the schema script in your MySQL client:
+
+```bash
+mysql -u root -p < database/schema.sql
+```
+
+Or open `database/schema.sql` manually in MySQL Workbench and execute it.
 
 ### Frontend
 ```bash
