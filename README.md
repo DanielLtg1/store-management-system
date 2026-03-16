@@ -1,16 +1,68 @@
-# React + Vite
+# Store Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Store management system for two shops — **Sonho Infantil Store** (children's clothing) and **Amore Mio Cosméticos** (perfumes). Built to run locally on a Wi-Fi network, replacing manual notebooks and spreadsheets.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Stock control — product registration, entries and exits
+- Conditional sales — track items taken by customers, partial returns and closing
+- Attendant management with PIN authentication per action
+- Separate themes and product catalogs for each store
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Frontend**
+- React + Vite
+- Tailwind CSS
+- React Router DOM
 
-## Expanding the ESLint configuration
+**Backend** *(in progress)*
+- Node.js + Express
+- MySQL
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Project Structure
+
+```
+store-management-system/
+├── src/                  # Frontend (React)
+│   ├── pages/
+│   ├── components/
+│   ├── context/
+│   └── theme.js
+└── backend/              # Backend (Node.js)
+    └── src/
+        ├── server.js
+        ├── db.js
+        └── routes/
+```
+
+## Getting Started
+
+### Frontend
+```bash
+npm install
+npm run dev
+```
+
+### Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### Environment variables
+
+Create a `.env` file inside `/backend`:
+
+```
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=gestao_lojas
+PORT=3000
+```
+
+## Status
+
+Currently in development — frontend complete, backend in progress.
