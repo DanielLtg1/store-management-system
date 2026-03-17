@@ -1,9 +1,10 @@
+DROP DATABASE IF EXISTS gestao_lojas;
 CREATE DATABASE gestao_lojas;
 USE gestao_lojas;
 
 CREATE TABLE atendente (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL,
+    nome VARCHAR(50) NOT NULL UNIQUE,
     senha_hash VARCHAR(255)
 );
 CREATE TABLE produto_roupa (
