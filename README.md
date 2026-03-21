@@ -18,7 +18,7 @@ Store management system for two shops — **Sonho Infantil Store** (children's c
 - Tailwind CSS
 - React Router DOM
 
-**Backend** *(in progress)*
+**Backend**
 - Node.js + Express
 - MySQL
 
@@ -34,8 +34,8 @@ store-management-system/
 ├── backend/              # Backend (Node.js)
 │   └── src/
 │       ├── server.js
-│       ├── db.js
-│       └── routes/
+│       └── database/
+│           └── connection.js
 └── database/
     └── schema.sql        # Database schema
 ```
@@ -77,6 +77,46 @@ DB_NAME=gestao_lojas
 PORT=3000
 ```
 
+## API Endpoints
+
+### Attendants
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /atendentes | List all attendants |
+| GET | /atendentes/:id | Get attendant by ID |
+| POST | /atendentes | Create attendant |
+| PUT | /atendentes/:id | Update attendant |
+| DELETE | /atendentes/:id | Disable attendant |
+
+### Products — Clothing
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /produtos/roupas | List all clothing items |
+| GET | /produtos/roupas/:id | Get clothing item by ID |
+| POST | /produtos/roupas | Create clothing item |
+| PUT | /produtos/roupas/:id | Update clothing item |
+| DELETE | /produtos/roupas/:id | Disable clothing item |
+
+### Products — Perfumes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /produtos/perfumes | List all perfumes |
+| GET | /produtos/perfumes/:id | Get perfume by ID |
+| POST | /produtos/perfumes | Create perfume |
+| PUT | /produtos/perfumes/:id | Update perfume |
+| DELETE | /produtos/perfumes/:id | Disable perfume |
+
+### Conditional Sales
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /condicionais | List all open conditionals |
+| GET | /condicionais/:id | Get conditional by ID |
+| POST | /condicionais | Create conditional |
+| PUT | /condicionais/:id | Update conditional status |
+| GET | /condicionais/:id/itens | Get conditional items |
+| POST | /condicionais/:id/itens | Add item to conditional |
+| PATCH | /condicionais/:id/itens/:itemId | Update returned quantity |
+
 ## Status
 
-Currently in development — frontend complete, backend in progress.
+Frontend complete. Backend complete. Next step: connect frontend to the API.
