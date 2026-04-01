@@ -114,25 +114,6 @@ app.post('/produtos/roupas', async (req, res) => {
     }
 });
 
-//Create a new perfume item
-app.post('/produtos/perfumes', async (req, res) => {
-    try {
-        const {nome, tamanho, genero, preco, quantidade} = req.body;
-
-        if (!nome || !tamanho || !genero || !preco || !quantidade) {
-            return res.status(400).json({ success: false, error: 'Todos os campos são obrigatórios!' });
-        }
-        await connection.execute(
-            "INSERT INTO produto_perfume (nome, tamanho, genero, preco, quantidade) VALUES (?, ?, ?, ?, ?)",
-            [nome, tamanho, genero, preco, quantidade]
-        );
-        res.status(201).json({success: true, message: 'Produto de perfume criado com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao criar produto de perfume:', error);
-        res.status(500).json({success: false, error: 'Erro interno do servidor' });
-    }
-});
-
 // Get all clothing items
 app.get('/produtos/roupas', async (req, res) => {
     try {
@@ -142,19 +123,6 @@ app.get('/produtos/roupas', async (req, res) => {
         res.status(200).json({success: true, data: rows});
     } catch (error) {
         console.error('Erro ao buscar produtos de roupa:', error);
-        res.status(500).json({success: false, error: 'Erro interno do servidor' });
-    }
-});
-
-// Get all perfume items
-app.get('/produtos/perfumes', async (req, res) => {
-    try {
-        const [rows] = await connection.execute(
-            "SELECT id, nome, tamanho, genero, preco, quantidade FROM produto_perfume WHERE ativo = 1"
-        );
-        res.status(200).json({success: true, data: rows});
-    } catch (error) {
-        console.error('Erro ao buscar produtos de perfume:', error);
         res.status(500).json({success: false, error: 'Erro interno do servidor' });
     }
 });
@@ -172,23 +140,6 @@ app.get('/produtos/roupas/:id', async (req, res) => {
         res.status(200).json({success: true, data: rows[0]});
     } catch (error) {
         console.error('Erro ao buscar produto de roupa:', error);
-        res.status(500).json({success: false, error: 'Erro interno do servidor' });
-    }
-});
-
-// Get a perfume item by ID
-app.get('/produtos/perfumes/:id', async (req, res) => {
-    try {
-        const [rows] = await connection.execute(
-            "SELECT id, nome, tamanho, genero, preco, quantidade FROM produto_perfume WHERE id = ? AND ativo = 1",
-            [req.params.id]
-        );
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'Produto não encontrado' })
-        }
-        res.status(200).json({success: true, data: rows[0]});
-    } catch (error) {
-        console.error('Erro ao buscar produto de perfume:', error);
         res.status(500).json({success: false, error: 'Erro interno do servidor' });
     }
 });
@@ -212,6 +163,105 @@ app.put('/produtos/roupas/:id', async (req, res) => {
     }
 });
 
+// Update clothing item quantity for stock entry
+app.patch('/produtos/roupas/:id/entrada', async (req, res) => {
+    const {quantidade} = req.body;
+    if (!quantidade) {
+        return res.status(400).json({ success: false, error: 'Quantidade é obrigatória!' });
+    }
+    try {
+        await connection.execute(
+            "UPDATE produto_roupa SET quantidade = quantidade + ? WHERE id = ? AND ativo = 1",
+            [quantidade, req.params.id]
+        );
+        res.status(200).json({ success: true, message: 'Quantidade de produto de roupa atualizada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao atualizar quantidade de produto de roupa:', error);
+        res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+// Update clothing item quantity for stock exit
+app.patch('/produtos/roupas/:id/saida', async (req, res) => {
+    const {quantidade} = req.body;
+    if (!quantidade) {
+        return res.status(400).json({ success: false, error: 'Quantidade é obrigatória!' });
+    }
+    try {
+        await connection.execute(
+            "UPDATE produto_roupa SET quantidade = quantidade - ? WHERE id = ? AND ativo = 1",
+            [quantidade, req.params.id]
+        );
+        res.status(200).json({ success: true, message: 'Quantidade de produto de roupa atualizada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao atualizar quantidade de produto de roupa:', error);
+        res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+// "Delete" (disable) a clothing item by ID
+app.delete('/produtos/roupas/:id', async (req, res) => {
+    try {
+        await connection.execute(
+            "UPDATE produto_roupa SET ativo = 0 WHERE id = ? AND ativo = 1",
+            [req.params.id]
+        );
+        res.status(200).json({ success: true, message: 'Produto de roupa removido com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao remover produto de roupa:', error);
+        res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+//Create a new perfume item
+app.post('/produtos/perfumes', async (req, res) => {
+    try {
+        const {nome, tamanho, genero, preco, quantidade} = req.body;
+
+        if (!nome || !tamanho || !genero || !preco || !quantidade) {
+            return res.status(400).json({ success: false, error: 'Todos os campos são obrigatórios!' });
+        }
+        await connection.execute(
+            "INSERT INTO produto_perfume (nome, tamanho, genero, preco, quantidade) VALUES (?, ?, ?, ?, ?)",
+            [nome, tamanho, genero, preco, quantidade]
+        );
+        res.status(201).json({success: true, message: 'Produto de perfume criado com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao criar produto de perfume:', error);
+        res.status(500).json({success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+// Get all perfume items
+app.get('/produtos/perfumes', async (req, res) => {
+    try {
+        const [rows] = await connection.execute(
+            "SELECT id, nome, tamanho, genero, preco, quantidade FROM produto_perfume WHERE ativo = 1"
+        );
+        res.status(200).json({success: true, data: rows});
+    } catch (error) {
+        console.error('Erro ao buscar produtos de perfume:', error);
+        res.status(500).json({success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+// Get a perfume item by ID
+app.get('/produtos/perfumes/:id', async (req, res) => {
+    try {
+        const [rows] = await connection.execute(
+            "SELECT id, nome, tamanho, genero, preco, quantidade FROM produto_perfume WHERE id = ? AND ativo = 1",
+            [req.params.id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Produto não encontrado' })
+        }
+        res.status(200).json({success: true, data: rows[0]});
+    } catch (error) {
+        console.error('Erro ao buscar produto de perfume:', error);
+        res.status(500).json({success: false, error: 'Erro interno do servidor' });
+    }
+});
+
 // Update a perfume item by ID
 app.put('/produtos/perfumes/:id', async (req, res) => {
     try {
@@ -231,16 +281,38 @@ app.put('/produtos/perfumes/:id', async (req, res) => {
     }
 });
 
-// "Delete" (disable) a clothing item by ID
-app.delete('/produtos/roupas/:id', async (req, res) => {
+// Update perfume item quantity for stock entry
+app.patch('/produtos/perfumes/:id/entrada', async (req, res) => {
+    const {quantidade} = req.body;
+    if (!quantidade) {
+        return res.status(400).json({ success: false, error: 'Quantidade é obrigatória!' });
+    }
     try {
         await connection.execute(
-            "UPDATE produto_roupa SET ativo = 0 WHERE id = ? AND ativo = 1",
-            [req.params.id]
+            "UPDATE produto_perfume SET quantidade = quantidade + ? WHERE id = ? AND ativo = 1",
+            [quantidade, req.params.id]
         );
-        res.status(200).json({ success: true, message: 'Produto de roupa removido com sucesso!' });
+        res.status(200).json({ success: true, message: 'Quantidade de produto de perfume atualizada com sucesso!' });
     } catch (error) {
-        console.error('Erro ao remover produto de roupa:', error);
+        console.error('Erro ao atualizar quantidade de produto de perfume:', error);
+        res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+// Update perfume item quantity for stock exit
+app.patch('/produtos/perfumes/:id/saida', async (req, res) => {
+    const {quantidade} = req.body;
+    if (!quantidade) {
+        return res.status(400).json({ success: false, error: 'Quantidade é obrigatória!' });
+    }
+    try {
+        await connection.execute(
+            "UPDATE produto_perfume SET quantidade = quantidade - ? WHERE id = ? AND ativo = 1",
+            [quantidade, req.params.id]
+        );
+        res.status(200).json({ success: true, message: 'Quantidade de produto de perfume atualizada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao atualizar quantidade de produto de perfume:', error);
         res.status(500).json({ success: false, error: 'Erro interno do servidor' });
     }
 });
@@ -308,9 +380,26 @@ app.get('/condicionais/:id', async (req, res) => {
     }
 });
 
-
-// Update a lease by ID
+// Update a lease information by ID
 app.put('/condicionais/:id', async (req, res) => {
+    try {
+        const {nome_cliente, telefone} = req.body;
+        if (!nome_cliente) {
+            return res.status(400).json({ success: false, error: 'Nome do cliente é obrigatório!' });
+        }
+        await connection.execute(
+            "UPDATE condicional SET nome_cliente = ?, telefone = ? WHERE id = ?",
+            [nome_cliente, telefone, req.params.id]
+        );
+        res.status(200).json({ success: true, message: 'Condicional atualizada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao atualizar condicional:', error);
+        res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+});
+
+// Update a lease status by ID
+app.patch('/condicionais/:id/status', async (req, res) => {
     try {
         const {status_condicional} = req.body;
         if (!status_condicional) {
@@ -320,9 +409,9 @@ app.put('/condicionais/:id', async (req, res) => {
             "UPDATE condicional SET status_condicional = ? WHERE id = ?",
             [status_condicional, req.params.id]
         );
-        res.status(200).json({ success: true, message: 'Condicional atualizada com sucesso!' });
+        res.status(200).json({ success: true, message: 'Status da condicional atualizado com sucesso!' });
     } catch (error) {
-        console.error('Erro ao atualizar condicional:', error);
+        console.error('Erro ao atualizar status da condicional:', error);
         res.status(500).json({ success: false, error: 'Erro interno do servidor' });
     }
 });
