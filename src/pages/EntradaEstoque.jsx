@@ -1,56 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { temas } from "../theme";
 import ModalPin from "../components/ModalPin";
 
-const produtosMock = [
-    {
-        id: 1,
-        nome: "Vestido Floral Rosa",
-        tamanho: "4",
-        genero: "Feminino",
-        preco: 89.9,
-        quantidade: 2,
-    },
-    {
-        id: 2,
-        nome: "Conjunto Listrado",
-        tamanho: "6",
-        genero: "Masculino",
-        preco: 74.9,
-        quantidade: 8,
-    },
-    {
-        id: 3,
-        nome: "Casaco de Moletom",
-        tamanho: "8",
-        genero: "Unissex",
-        preco: 119.9,
-        quantidade: 5,
-    },
-    {
-        id: 4,
-        nome: "Body Bordado Branco",
-        tamanho: "M",
-        genero: "Feminino",
-        preco: 49.9,
-        quantidade: 12,
-    },
-];
+// Importing the API service functions to interact with the backend
+import { getProdutos, updateProdutoEntrada } from "../services/produtos";
 
 export default function EntradaEstoque() {
     const navigate = useNavigate();
     const { loja } = useApp();
     const t = temas[loja] || temas.sonhoInfantil;
+    const isSonhoInfantil = loja === "sonhoInfantil";
+    const tipo = isSonhoInfantil ? "roupas" : "perfumes";
 
     const [busca, setBusca] = useState("");
-    const [itens, setItens] = useState(
-        produtosMock.map((p) => ({ ...p, qtdEntrada: 0 })),
-    );
+    const [itens, setItens] = useState([]);
     const [observacao, setObservacao] = useState("");
     const [modalPin, setModalPin] = useState(false);
     const [erros, setErros] = useState({});
+
+    useEffect(() => {
+        loadProdutos(tipo);
+    }, [tipo]);
+
+    async function loadProdutos(tipo) {
+        try {
+            const response = await getProdutos(tipo);
+            setItens(response.data.map((p) => ({ ...p, qtdEntrada: 0 })));
+        } catch (error) {
+            console.error("Erro ao carregar produtos:", error);
+        }
+    }
 
     function alterarQtd(id, delta) {
         setItens((prev) =>
@@ -86,15 +67,22 @@ export default function EntradaEstoque() {
         return Object.keys(novosErros).length === 0;
     }
 
-    function handleConfirmar(atendente) {
+    async function handleConfirmar(atendente) {
         setModalPin(false);
-        navigate("/estoque");
+        try {
+            for (const item of itensSelecionados) {
+                await updateProdutoEntrada(tipo, item.id, item.qtdEntrada);
+            }
+            navigate("/estoque");
+        } catch (error) {
+            console.error("Erro ao registrar entrada:", error);
+        }
     }
 
     function iconeGenero(genero) {
         if (loja === "amoreMio") return "🌸";
-        if (genero === "Masculino") return "👕";
-        if (genero === "Feminino") return "👗";
+        if (genero === "M") return "👕";
+        if (genero === "F") return "👗";
         return "🧥";
     }
 

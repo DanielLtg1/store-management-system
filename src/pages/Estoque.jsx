@@ -1,47 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { temas } from "../theme";
 import ModalPin from "../components/ModalPin";
+import Deletar from "../assets/apagar.png";
+import Editar from "../assets/editar.png";
 
-const produtosMock = [
-    {
-        id: 1,
-        nome: "Vestido Floral Rosa",
-        tamanho: "4",
-        genero: "Feminino",
-        preco: 89.9,
-        quantidade: 2,
-    },
-    {
-        id: 2,
-        nome: "Conjunto Listrado",
-        tamanho: "6",
-        genero: "Masculino",
-        preco: 74.9,
-        quantidade: 8,
-    },
-    {
-        id: 3,
-        nome: "Casaco de Moletom",
-        tamanho: "8",
-        genero: "Unissex",
-        preco: 119.9,
-        quantidade: 5,
-    },
-    {
-        id: 4,
-        nome: "Body Bordado Branco",
-        tamanho: "M",
-        genero: "Feminino",
-        preco: 49.9,
-        quantidade: 12,
-    },
-];
+// Importing the API service functions to interact with the backend
+import { getProdutos } from "../services/produtos.js";
 
 export default function Estoque() {
+    const [produtos, setProdutos] = useState([]);
+
     const navigate = useNavigate();
     const { loja } = useApp();
+    const isSonhoInfantil = loja === "sonhoInfantil";
+    const tipo = isSonhoInfantil ? "roupas" : "perfumes";
     const t = temas[loja] || temas.sonhoInfantil;
 
     const [busca, setBusca] = useState("");
@@ -51,12 +25,24 @@ export default function Estoque() {
 
     const filtros = ["Todos", "Feminino", "Masculino", "Unissex"];
 
-    const produtosFiltrados = produtosMock.filter((p) => {
+    const produtosFiltrados = produtos.filter((p) => {
         const buscaOk = p.nome.toLowerCase().includes(busca.toLowerCase());
         const generoOk = filtroGenero === "Todos" || p.genero === filtroGenero;
         return buscaOk && generoOk;
     });
 
+    useEffect(() => {
+        loadProdutos(tipo);
+    }, [tipo]);
+
+    async function loadProdutos(tipo) {
+        try {
+            const response = await getProdutos(tipo);
+            setProdutos(response.data);
+        } catch (error) {
+            console.error("Erro ao carregar produtos:", error);
+        }
+    }
     function handleConfirmar(atendente) {
         setModalPin(false);
         console.log(`Ação "${acaoPin}" confirmada por ${atendente.nome}`);
@@ -64,8 +50,8 @@ export default function Estoque() {
 
     function iconeGenero(genero) {
         if (loja === "amoreMio") return "🌸";
-        if (genero === "Masculino") return "👕";
-        if (genero === "Feminino") return "👗";
+        if (genero === "M") return "👕";
+        if (genero === "F") return "👗";
         return "🧥";
     }
 
@@ -182,7 +168,9 @@ export default function Estoque() {
                                     <div
                                         className={`font-bold text-sm lg:text-base ${t.textoPrimario}`}
                                     >
-                                        {produto.preco.toLocaleString("pt-BR", {
+                                        {parseFloat(
+                                            produto.preco,
+                                        ).toLocaleString("pt-BR", {
                                             style: "currency",
                                             currency: "BRL",
                                         })}
@@ -191,6 +179,26 @@ export default function Estoque() {
                                         className={`text-xs lg:text-sm mt-1 font-medium ${estoqueBaixo ? "text-amber-500" : t.textoSecundario}`}
                                     >
                                         {produto.quantidade} un.
+                                    </div>
+                                    <div className="flex flex-row">
+                                        <div
+                                            className="mt-3 w-5 h-5 cursor-pointer ml-auto"
+                                            onClick={() => {
+                                                setAcaoPin("editar");
+                                                setModalPin(true);
+                                            }}
+                                        >
+                                            <img src={Editar} alt="Editar" />
+                                        </div>
+                                        <div
+                                            className="mt-3 w-5 h-5 cursor-pointer ml-auto"
+                                            onClick={() => {
+                                                setAcaoPin("deletar");
+                                                setModalPin(true);
+                                            }}
+                                        >
+                                            <img src={Deletar} alt="Deletar" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -1,58 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { temas } from "../theme";
 
-const condicionaisMock = [
-    {
-        id: 1,
-        clienteNome: "Maria Oliveira",
-        clienteTelefone: "(63) 98765-4321",
-        dataSaida: "2026-03-05",
-        totalPecas: 6,
-        status: "aberto",
-    },
-    {
-        id: 2,
-        clienteNome: "Ana Paula Costa",
-        clienteTelefone: "(63) 91234-5678",
-        dataSaida: "2026-03-06",
-        totalPecas: 10,
-        status: "aberto",
-    },
-    {
-        id: 3,
-        clienteNome: "Fernanda Lima",
-        clienteTelefone: "(63) 99876-0001",
-        dataSaida: "2026-03-07",
-        totalPecas: 4,
-        status: "aberto",
-    },
-    {
-        id: 4,
-        clienteNome: "Juliana Mendes",
-        clienteTelefone: "(63) 98001-2233",
-        dataSaida: "2026-03-04",
-        totalPecas: 5,
-        totalFicou: 3,
-        valorCobrado: 254.7,
-        status: "encerrado",
-    },
-];
+// Importing the api service to fetch products from the backend
+import { getCondicionais } from "../services/condicionais.js";
 
 export default function Condicionais() {
+    const [condicionais, setCondicionais] = useState([]);
     const navigate = useNavigate();
     const { loja } = useApp();
     const t = temas[loja] || temas.sonhoInfantil;
     const [filtro, setFiltro] = useState("aberto");
 
-    const condicionaisFiltrados = condicionaisMock.filter((c) =>
-        filtro === "todos" ? true : c.status === filtro,
-    );
+    useEffect(() => {
+        loadCondicionais();
+    }, []);
+
+    async function loadCondicionais() {
+        try {
+            const response = await getCondicionais();
+            setCondicionais(response.data);
+        } catch (error) {
+            console.error("Erro ao carregar condicionais:", error);
+        }
+    }
+
+    const condicionaisFiltrados = condicionais.filter((c) => {
+        if (filtro === "todos") return true;
+        return c.status_condicional === filtro;
+    });
 
     function formatarData(dataStr) {
-        const [ano, mes, dia] = dataStr.split("-");
-        return `${dia}/${mes}/${ano}`;
+        const data = new Date(dataStr);
+        return data.toLocaleDateString("pt-BR");
     }
 
     return (
@@ -112,26 +93,26 @@ export default function Condicionais() {
                             key={c.id}
                             onClick={() => navigate(`/condicionais/${c.id}`)}
                             className={`${t.bgCard} border rounded-xl p-4 lg:p-5 text-left hover:shadow-lg hover:-translate-y-0.5 transition ${t.hoverCard}  w-full 
-                ${c.status === "aberto" ? t.bordaAccent : t.bordaCard}
-                ${c.status === "encerrado" ? "opacity-60" : ""}`}
+                ${c.status_condicional === "aberto" ? t.bordaAccent : t.bordaCard}
+                ${c.status_condicional === "encerrado" ? "opacity-60" : ""}`}
                         >
                             <div className="flex justify-between items-start">
                                 <div>
                                     <div
                                         className={`font-semibold text-sm lg:text-base ${t.textoPrimario}`}
                                     >
-                                        {c.clienteNome}
+                                        {c.nome_cliente}
                                     </div>
                                     <div
                                         className={`text-xs lg:text-sm ${t.textoSecundario} mt-0.5`}
                                     >
-                                        📞 {c.clienteTelefone}
+                                        📞 {c.telefone}
                                     </div>
                                 </div>
                                 <span
-                                    className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full ${c.status === "aberto" ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-800"}`}
+                                    className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full ${c.status_condicional === "aberto" ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-800"}`}
                                 >
-                                    {c.status === "aberto"
+                                    {c.status_condicional === "aberto"
                                         ? "ABERTO"
                                         : "ENCERRADO"}
                                 </span>
@@ -142,23 +123,15 @@ export default function Condicionais() {
                                 <span
                                     className={`text-xs lg:text-sm ${t.textoSecundario}`}
                                 >
-                                    Saiu em {formatarData(c.dataSaida)} ·{" "}
-                                    {c.totalPecas} peças
+                                    Saiu em {formatarData(c.data_condicional)}{" "}
                                 </span>
-                                {c.status === "aberto" ? (
+                                {c.status_condicional === "aberto" ? (
                                     <span className="text-xs lg:text-sm font-semibold text-amber-500">
                                         Aguardando devolução
                                     </span>
                                 ) : (
                                     <span className="text-xs lg:text-sm font-semibold text-green-700">
-                                        {c.valorCobrado.toLocaleString(
-                                            "pt-BR",
-                                            {
-                                                style: "currency",
-                                                currency: "BRL",
-                                            },
-                                        )}{" "}
-                                        cobrado
+                                        Devolvido
                                     </span>
                                 )}
                             </div>

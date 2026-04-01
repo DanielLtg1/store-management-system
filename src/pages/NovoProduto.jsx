@@ -4,11 +4,15 @@ import { useApp } from "../context/AppContext";
 import { temas } from "../theme";
 import ModalPin from "../components/ModalPin";
 
+// Importing the API service functions to interact with the backend
+import { createProduto } from "../services/produtos.js";
+
 export default function NovoProduto() {
     const navigate = useNavigate();
     const { loja } = useApp();
     const t = temas[loja] || temas.sonhoInfantil;
     const isSonho = loja === "sonhoInfantil";
+    const tipo = isSonho ? "roupas" : "perfumes";
 
     const [nome, setNome] = useState("");
     const [tamanho, setTamanho] = useState("");
@@ -70,9 +74,23 @@ export default function NovoProduto() {
         return "🧥";
     }
 
-    function handleConfirmar(atendente) {
+    async function handleConfirmar(atendente) {
         setModalPin(false);
-        navigate("/estoque");
+
+        const produto = {
+            nome: nome.trim(),
+            tamanho,
+            genero,
+            preco: parseFloat(preco.replace(",", ".")),
+            quantidade: parseInt(quantidade),
+        }
+
+        try {
+            await createProduto(tipo, produto);
+            navigate("/estoque");
+        } catch (error) {
+            console.error("Erro ao criar produto:", error);
+        }
     }
 
     return (
@@ -104,7 +122,7 @@ export default function NovoProduto() {
                         <label
                             className={`text-xs font-semibold ${t.textoSecundario} mb-1.5 block`}
                         >
-                            Nome do produto
+                            Nome do produto *
                         </label>
                         <input
                             type="text"
@@ -132,7 +150,7 @@ export default function NovoProduto() {
                         <label
                             className={`text-xs font-semibold ${t.textoSecundario} mb-1.5 block`}
                         >
-                            Tamanho
+                            Tamanho *
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {tamanhos.map((tam) => (
@@ -162,7 +180,7 @@ export default function NovoProduto() {
                         <label
                             className={`text-xs font-semibold ${t.textoSecundario} mb-1.5 block`}
                         >
-                            Gênero
+                            Gênero *
                         </label>
                         <div className="flex gap-2">
                             {generos.map((g) => (
@@ -193,7 +211,7 @@ export default function NovoProduto() {
                             <label
                                 className={`text-xs font-semibold ${t.textoSecundario} mb-1.5 block`}
                             >
-                                Preço de venda
+                                Preço de venda *
                             </label>
                             <div className="relative">
                                 <span
@@ -227,7 +245,7 @@ export default function NovoProduto() {
                             <label
                                 className={`text-xs font-semibold ${t.textoSecundario} mb-1.5 block`}
                             >
-                                Quantidade inicial
+                                Quantidade inicial *
                             </label>
                             <input
                                 type="number"
