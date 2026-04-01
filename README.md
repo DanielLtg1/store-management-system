@@ -113,7 +113,7 @@ PORT=3000
 | GET | /condicionais/:id | Get conditional by ID |
 | POST | /condicionais | Create conditional |
 | PUT | /condicionais/:id | Update conditional info |
-| PATCH | /condicionais/:id/status | Update de conditional status |
+| PATCH | /condicionais/:id/status | Update the conditional status |
 | GET | /condicionais/:id/itens | Get conditional items |
 | POST | /condicionais/:id/itens | Add item to conditional |
 | PATCH | /condicionais/:id/itens/:itemId | Update returned quantity |
